@@ -1,19 +1,34 @@
+from flask import Flask, render_template, jsonify
 import sqlite3
 
-# 1. Conecta-se ou cria o arquivo do banco de dados
-conexao = sqlite3.connect('meu_banco.db')
+app = Flask(__name__)
 
-# 2. Cria um cursor para executar comandos SQL
-cursor = conexao.cursor()
+def get_db_connection():
+    conexao = sqlite3.connect("meu_banco.db")
+    conexao.row_factory = sqlite3.Row
+    return conexao
 
-cursor.execute(
-    '''
-        CREATE TABLE IF NOT EXISTS usuarios(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nome TEXT NOT NULL,
-            email TEXT NOT NULL UNIQUE
-        )
-    '''
-)
-conexao.commit() # Aplica o SQL ao banco
-conexao.close()
+# http://localhost:5000/usuarios
+@app.route("/usuarios")
+def listar_usuarios():
+    # Recuperar a conoexão do 
+    conexao = get_db_connection()
+    # Recuperar a resposta do SELECT
+    cursor = conexao.cursor()
+    cursor.execute(
+        '''
+            SELECT * FROM usuarios;
+        '''
+    )
+    usuarios = cursor.fetchall()
+    # Converte formato ROW do sqlite3 para Dicionario
+    usuario = [dict(u) for u in usuarios]
+
+
+    # Fechar a conexão
+    conexao.close()
+    # Retornar o resultado
+    return jsonify(usuario)
+
+if __name__ == '__main__':
+    app.run(debug=True)

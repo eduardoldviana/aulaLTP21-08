@@ -1,11 +1,31 @@
 import sqlite3
 
-DATABASE = "meu_banco.bd"
+DATABASE = "meu_banco.db"
 
 def get_db_connection():
     conexao = sqlite3.connect(DATABASE)
     conexao.row_factory = sqlite3.Row
     return conexao
+
+def listar_todos_usuarios():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    usuarios = cursor.execute('SELECT * FROM usuarios').fetchall()
+    conn.close()
+    return usuarios
+def inserir_usuario(nome, email):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('INSERT INTO usuarios (nome, email) VALUES (?, ?)', (nome, email))
+    conn.commit()
+    conn.close()
+def deletar_usuario_por_id(id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM usuarios WHERE id = ?', (id,))
+    conn.commit()
+    conn.close()
+
 
 def create_user_table():
     conexao = get_db_connection()
@@ -21,24 +41,24 @@ def create_user_table():
         )
     conexao.close()
 
-    def insert_user(nome, email):
-        conexao = get_db_connection()
-        cursor = conexao.cursor()
-        cursor.execute(
-            '''
-                INSERT INTO usuarios(nome, email) VALUES (?, ?);
-            '''
-           , (nome, email)
-        )
-        cursor.commit()
-        conexao.close()
+def insert_user(nome, email):
+    conexao = get_db_connection()
+    cursor = conexao.cursor()
+    cursor.execute(
+        '''
+            INSERT INTO usuarios(nome, email) VALUES (?, ?);
+        '''
+        , (nome, email)
+    )
+    cursor.commit()
+    conexao.close()
 
 def get_all_users():
     conexao = get_db_connection()
     cursor = conexao.cursor()
     cursor.execute(
         '''
-            SELECT FROM usuarios;
+            SELECT * FROM usuarios;
         '''
     )
     usuarios = cursor.fetchall()
@@ -47,6 +67,32 @@ def get_all_users():
     conexao.close()
     return usuarioDict
 
+def update_user_email_by_id(email, id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        '''
+            UPDATE usuarios
+            set email = ?
+            WHERE id = ?;
+        '''
+        , (email, id)
+    )
+    conn.execute()
+    conn.close()
+
+def select_user_by_id(id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        '''
+            SELECT * FROM usuarios WHERE id = ?;
+        '''
+        , (id, )
+    )
+    user = dict(cursor.fetchone())
+    conn.close()
+    return user
 # 1. Conecta-se ou cria o arquivo do banco de dados
 # conexao = sqlite3.connect('meu_banco.db')
 
